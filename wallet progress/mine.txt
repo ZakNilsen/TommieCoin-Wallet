@@ -1,0 +1,51 @@
+def mineCoins(chain, pk):
+	blocks = chain['blocks']
+	#blockint = findLastMined(chain)
+	#Correct way to get right prevMine?
+	#transHold = blocks[blockint]['transactions']
+	trans = genMined(pk, str(findLastMined(chain)))
+	valid = False
+	i = 0
+	while(valid !=True):
+			trans['nonce'] = str(i)
+			valid = isValidMinedTrans(chain, trans)
+			i+=1
+	
+	minestr = json.dumps(trans, sort_keys=True)
+	mineVal = requests.post('http://127.0.0.1:8080/addtrans', data={'trans':minestr})
+	return mineVal
+
+	def genMined(beneficiarypk, prevmine):
+    
+    trans = copy.deepcopy(emptyMinedTrans)
+    trans['prevmine'] = prevmine
+    out_dict = {'recipient':tu.sha256(beneficiarypk), 'value':50}
+    out_copy = out_dict.copy()
+    trans['outs'].append(out_copy)
+    trans['timestamp'] = time.time()
+    return trans
+
+    def isValidMinedTrans(chain, trans):
+    
+    tcopy = copy.deepcopy(trans)
+    tcopy['nonce'] = ''
+ 
+    minehash = tu.sha256(trans['nonce']+tu.sha256(json.dumps(tcopy,sort_keys=True)))
+    
+    # needs to hash correctly to start with six 0s
+    if (minehash[:6] != '000000'):
+        #print "mine transaction does not hash to 6 zeros"
+        return False
+    
+    print("Mining was successful")
+    return True
+
+    def findLastMined(chain):
+    
+    numblocks = len(chain['blocks'])
+    i = numblocks-1
+    while (i>=0):
+        if (chain['blocks'][i]['transactions']['transtype']=='2'):
+            break
+        i -= 1
+    return i

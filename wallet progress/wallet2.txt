@@ -1,0 +1,131 @@
+#!/usr/bin/python
+
+# dictionaries to strings using json
+import json
+
+# to send requests to server
+import requests
+
+# for command-line arguments
+import sys 
+
+# all the crypto stuff is here
+import tommieutils as tu
+
+
+
+######### YOUR CODE HERE ############
+pkFile = open(sys.argv[1], "r")
+skFile = open(sys.argv[2], "r")
+pkFileStr = pkFile.read()
+
+def getBal():
+	
+	#query
+    val = requests.get('http://127.0.0.1:8080/showchainraw')
+    valstr = json.loads(val.text)
+    used = []
+    used = getAllUsedCoins(valstr)
+    coinList = ()
+    print used
+    value = 0
+
+    transid = 0
+    outnum = 0
+    for block in valstr['blocks']:
+        transactions = block['transactions']
+        for out in transactions['outs']:
+                recipient = out['recipient']
+                if recipient == tu.sha256(pkFileStr):
+                        coinList =  coinList + [(transid, outnum)]
+                        if coinList[len(coinList)-1] in used:
+                                break
+                        value += out['value']
+                        print coinList
+                        print value
+                outnum += 1
+        transid += 1
+    return value
+
+
+def payCoins():
+	#pay
+	return 0
+def mineCoins():
+	#mine
+	return 0
+
+#from transactions
+#Need to complete 
+def genPay(pk,sk, inlist, pklist, amtlist):
+    """
+
+    inlist should be list of pairs, with (transid, outnum)
+    inlist should be spendable by same user (who has pk,sk as key)
+    this function does not have any restrictions enforced (i.e., shouldn't call$
+    """
+    trans = copy.deepcopy(emptyPayTrans)
+    return trans
+
+#from transactions
+def genMined(beneficiarypk, prevmine):
+    """
+    You will want to write this function, probably in your wallet
+    """
+    trans = copy.deepcopy(emptyMinedTrans)
+    return trans
+
+#from transactions
+def getAllUsedCoins(chain):
+    used = []
+    for block in chain['blocks']:
+        currtrans = block['transactions']
+        if (currtrans['transtype']=='1'):
+            currins = [(x['transid'],x['outnum']) for x in currtrans['ins']]
+            used.extend(currins)
+    return used
+
+#from transactions
+def isAvailCoin(inpair, chain):
+    #coin (repr. by a pair (blocknum,outnum)) is available if it has never appeared i
+    chain = getCurrChain()
+    used = getAllUsedCoins(chain)
+    if (inpair in used):
+        return False
+    return True
+
+
+def findUser(name):
+	newstr = name.replace('keys/', '')
+        strHold = list(newstr)
+        strName = ''
+        strHold[0] = strHold[0].upper()
+        for i in range(len(newstr)):
+                if(strHold[i] == 'p' and strHold[i+1] == 'k'):
+                        return strName
+                strName += strHold[i]
+        return strName
+
+
+getBal()
+name = findUser(sys.argv[1])
+print("Hello " + name + ", welcome")
+#while(true):
+	#print("You currently have " + getBal + " TommieCoins.")
+	#print("<>"*20)
+	#print("What would you like to do?")
+	#print("Options:\n 1) Pay\n 2) Mine\n 3) Quit")
+	#option = input("Enter actione: ")
+	#print("<>"*20) 
+	#if option == 1 || option.lower() == "pay":
+		#payCoins()
+	#elif option == 2 || option.lower() == "mine":
+		#mineCoins()		
+	#elif option == 3 || option.lower() == "quit":
+		#print("Exiting")
+		#print("<>"*20)
+		#return 0
+	#else:
+		#print("Invalid option")
+		#print("Please use option numbers or words given")
+		#continue
